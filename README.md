@@ -1,5 +1,6 @@
 # PrintCharge
 Basic Algorithm
+
 -read file
 -for each line in the file
   -determine one side/two sided
