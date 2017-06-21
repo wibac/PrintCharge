@@ -52,38 +52,33 @@ public class CostCalculatorTest {
 		assertEquals(50, costCalculator.calculateCost(input));
 	}
 	
-	@Ignore("yet to implement")
 	@Test
 	public void testInsufficientInput() {
 		String input="2,1";
-		
+		assertEquals(0, costCalculator.calculateCost(input));
 	}
 	
-	@Ignore("yet to implement")
 	@Test
 	public void testIncorrectSideInput() {
 		String input="3,2,yes";
-		assertEquals(65, costCalculator.calculateCost(input));
+		assertEquals(0, costCalculator.calculateCost(input));
 	}
 	
-	@Ignore("yet to implement")
 	@Test
 	public void testIncorrectPageInput() {
 		String input="2,one,false";
-		assertEquals(40, costCalculator.calculateCost(input));
+		assertEquals(0, costCalculator.calculateCost(input));
 	}
 	
-	@Ignore("yet to implement")
 	@Test
 	public void testIncorrectNumberOfPages() {
 		String input="3,5,false";
-		assertEquals(65, costCalculator.calculateCost(input));
+		assertEquals(0, costCalculator.calculateCost(input));
 	}
 	
-	@Ignore("yet to implement")
 	@Test
 	public void testCaseSensitiveInput() {
 		String input="2,1,TRUE";
-		assertEquals(40, costCalculator.calculateCost(input));
+		assertEquals(30, costCalculator.calculateCost(input));
 	}
 }
