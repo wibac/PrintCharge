@@ -1,4 +1,5 @@
 # PrintCharge
+set the printing cost and the file path in the properties file
 Basic Algorithm
 
 algo
