@@ -11,15 +11,15 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 public class CostCalculator {
-	private static final String PROPFILE = "setup.properties";	
+	private static final String PROPFILE = "setup.properties";
 	private static Properties properties = null;
-	
+
 	/**
 	 * gets the file path and reads a file on that path
 	 */
-	BufferedReader readFile(){
+	BufferedReader readFile() {
 		Path path = Paths.get(properties.getProperty("uri"));
-		BufferedReader reader=null;
+		BufferedReader reader = null;
 		try {
 			reader = Files.newBufferedReader(path);
 		} catch (IOException e) {
@@ -30,17 +30,18 @@ public class CostCalculator {
 	}
 
 	/**
-	 * reads the file and maintains total cost 
+	 * reads the file and maintains total cost
 	 */
 	void calculateTotalCost() {
 		try {
 			BufferedReader reader = readFile();
-			if(reader==null)
+			if (reader == null)
 				return;
 			String line = null;
 			int totalCost = 0;
 			while ((line = reader.readLine()) != null) {
-				totalCost = totalCost + calculateCost(line);// calculate cost and add to total
+				// calculate cost and add to total
+				totalCost = totalCost + calculateCost(line);
 			}
 			System.out.println("Total cost is $" + String.format("%.2f", (totalCost / 100.0)));
 		} catch (IOException e) {
@@ -55,35 +56,36 @@ public class CostCalculator {
 	int calculateCost(String line) {
 		int cost = 0;
 		String job[] = line.split(",");
-		String pageSize = "a4";// this will be taken from input when more page sizes are added
-		int colourPageCount=0;
-		int totalPageCount=0;
-		if(job.length<3){ //check if the input has 3 required components
+		// this will be taken from input when more page sizes are added
+		String pageSize = "a4";
+		int colourPageCount = 0;
+		int totalPageCount = 0;
+		if (job.length < 3) { // check if the input has 3 required components
 			System.out.println("Invalid input");
 			return cost;
 		}
-		try{
-			//check if page count is integer
+		try {
+			// check if page count is integer
 			totalPageCount = Integer.parseInt(job[0].trim());
 			colourPageCount = Integer.parseInt(job[1].trim());
-			if((totalPageCount<colourPageCount)||(totalPageCount<0) || (colourPageCount<0)){ //check if page count is correct
+			// check if page count is correct
+			if ((totalPageCount < colourPageCount) || (totalPageCount < 0) || (colourPageCount < 0)) { 
 				System.out.println("Invalid input");
 				return cost;
 			}
-		}catch(NumberFormatException nfe){
+
+			if (job[2].trim().equalsIgnoreCase("false")) {// one side
+				cost = colourPageCount * Integer.parseInt(properties.getProperty(pageSize + "colourOneSide"));
+				cost = cost + (totalPageCount - colourPageCount)
+						* Integer.parseInt(properties.getProperty(pageSize + "bwOneSide"));
+			} else if (job[2].trim().equalsIgnoreCase("true")) {// both side
+				cost = colourPageCount * Integer.parseInt(properties.getProperty(pageSize + "colourBothSide"));
+				cost = cost + (totalPageCount - colourPageCount)
+						* Integer.parseInt(properties.getProperty(pageSize + "bwBothSide"));
+			}
+		} catch (NumberFormatException nfe) {
 			System.out.println("Invalid input");
 			return cost;
-		}
-		if (job[2].trim().equalsIgnoreCase("false")) {// one side
-			cost = colourPageCount
-					* Integer.parseInt(properties.getProperty(pageSize + "colourOneSide"));
-			cost = cost + (totalPageCount - colourPageCount)
-					* Integer.parseInt(properties.getProperty(pageSize + "bwOneSide"));
-		} else if(job[2].trim().equalsIgnoreCase("true")){// both side
-			cost = colourPageCount
-					* Integer.parseInt(properties.getProperty(pageSize + "colourBothSide"));
-			cost = cost + (totalPageCount - colourPageCount)
-					* Integer.parseInt(properties.getProperty(pageSize + "bwBothSide"));
 		}
 		System.out.println("Cost for " + job[1] + " colour pages and "
 				+ (Integer.parseInt(job[0].trim()) - Integer.parseInt(job[1].trim()) + " b&w pages is " + cost));
