@@ -9,11 +9,13 @@ import org.junit.Test;
 public class CostCalculatorTest {
 
 	CostCalculator costCalculator;
+	Job job;
 	
 	@Before
 	public void setup() throws Exception{
 		costCalculator = new CostCalculator();
 		costCalculator.setup();
+		costCalculator.setJob();
 	}
 	
 	@Test
@@ -52,28 +54,28 @@ public class CostCalculatorTest {
 		assertEquals(50, costCalculator.calculateCost(input));
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testInsufficientInput() {
 		String input="2,1";
 		assertEquals(0, costCalculator.calculateCost(input));
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testIncorrectSideInput() {
 		String input="3,2,yes";
-		assertEquals(0, costCalculator.calculateCost(input));
+		costCalculator.calculateCost(input);
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testIncorrectPageInput() {
 		String input="2,one,false";
-		assertEquals(0, costCalculator.calculateCost(input));
+		costCalculator.calculateCost(input);
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testIncorrectNumberOfPages() {
 		String input="3,5,false";
-		assertEquals(0, costCalculator.calculateCost(input));
+		costCalculator.calculateCost(input);
 	}
 	
 	@Test

@@ -13,7 +13,13 @@ import java.util.Properties;
 public class CostCalculator {
 	private static final String PROPFILE = "setup.properties";
 	private static Properties properties = null;
+	private Job job = null;
 
+	public void setJob(){
+		if(job==null){
+			job = new Job();
+		}
+	}
 	/**
 	 * gets the file path and reads a file on that path
 	 */
@@ -32,11 +38,12 @@ public class CostCalculator {
 	/**
 	 * reads the file and maintains total cost
 	 */
-	void calculateTotalCost() {
+	void calculateTotalCost() throws IOException {
 		try {
 			BufferedReader reader = readFile();
 			if (reader == null)
 				return;
+			setJob();
 			String line = null;
 			int totalCost = 0;
 			while ((line = reader.readLine()) != null) {
@@ -44,51 +51,68 @@ public class CostCalculator {
 				totalCost = totalCost + calculateCost(line);
 			}
 			System.out.println("Total cost is $" + String.format("%.2f", (totalCost / 100.0)));
-		} catch (IOException e) {
-			System.out.println("error in reading file");
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Error. Check Input");
 		}
+	}
+
+	/**
+	 * validates the input and returns Job
+	 */
+	private Job initializeAndValidateJob(String input) {
+		try {
+			String inputArr[] = input.split(",");
+			// check if the input has 3 required
+			if (inputArr.length < 3) {
+				throw new IllegalArgumentException();
+			}
+			// check if page count is integer
+			job.setTotalPage(Integer.parseInt(inputArr[0].trim()));
+			job.setColourPage(Integer.parseInt(inputArr[1].trim()));
+			// check if page count is correct
+			if ((job.getTotalPage() < job.getColourPage()) || (job.getTotalPage() < 0) || (job.getColourPage() < 0)) {
+				throw new IllegalArgumentException();
+			}
+			job.setBwPage(job.getTotalPage() - job.getColourPage());
+
+			if (inputArr[2].trim().equalsIgnoreCase("false")) {
+				job.setPrintBothSide(false);
+			} else if (inputArr[2].trim().equalsIgnoreCase("true")) {
+				job.setPrintBothSide(true);
+			} else {
+				throw new IllegalArgumentException();
+			}
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException();
+		}
+		return job;
 	}
 
 	/**
 	 * Calculates the cost of printing for a particular job
 	 */
-	int calculateCost(String line) {
+	int calculateCost(String input) {
 		int cost = 0;
-		String job[] = line.split(",");
 		// this will be taken from input when more page sizes are added
 		String pageSize = "a4";
-		int colourPageCount = 0;
-		int totalPageCount = 0;
-		if (job.length < 3) { // check if the input has 3 required components
-			System.out.println("Invalid input");
-			return cost;
-		}
+		initializeAndValidateJob(input);
 		try {
-			// check if page count is integer
-			totalPageCount = Integer.parseInt(job[0].trim());
-			colourPageCount = Integer.parseInt(job[1].trim());
-			// check if page count is correct
-			if ((totalPageCount < colourPageCount) || (totalPageCount < 0) || (colourPageCount < 0)) { 
-				System.out.println("Invalid input");
-				return cost;
-			}
 
-			if (job[2].trim().equalsIgnoreCase("false")) {// one side
-				cost = colourPageCount * Integer.parseInt(properties.getProperty(pageSize + "colourOneSide"));
-				cost = cost + (totalPageCount - colourPageCount)
+			if (!job.isPrintBothSide()) {// one side
+				cost = job.getColourPage() * Integer.parseInt(properties.getProperty(pageSize + "colourOneSide"));
+				cost = cost + (job.getBwPage())
 						* Integer.parseInt(properties.getProperty(pageSize + "bwOneSide"));
-			} else if (job[2].trim().equalsIgnoreCase("true")) {// both side
-				cost = colourPageCount * Integer.parseInt(properties.getProperty(pageSize + "colourBothSide"));
-				cost = cost + (totalPageCount - colourPageCount)
+			} else {// both side
+				cost = job.getColourPage() * Integer.parseInt(properties.getProperty(pageSize + "colourBothSide"));
+				cost = cost + (job.getBwPage())
 						* Integer.parseInt(properties.getProperty(pageSize + "bwBothSide"));
 			}
 		} catch (NumberFormatException nfe) {
-			System.out.println("Invalid input");
-			return cost;
+			// System.out.println("Invalid input");
+			throw nfe;
 		}
-		System.out.println("Cost for " + job[1] + " colour pages and "
-				+ (Integer.parseInt(job[0].trim()) - Integer.parseInt(job[1].trim()) + " b&w pages is " + cost));
+		System.out.println("Cost for " + job.getColourPage() + " colour pages and "
+				+ job.getBwPage() + " b&w pages is " + cost);
 		return cost;
 	}
 
